@@ -22,6 +22,7 @@ count_vect.fit(train['introduction'])
 
 # Encoding
 encoder = LabelEncoder()
-
 encodedLabels = encoder.fit_transform(train['label'])
+
+
 
