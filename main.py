@@ -15,10 +15,10 @@ from sklearn.linear_model import LogisticRegression
 # Load Datasets to Data Frames
 trainFilepath = 'data/train.csv'
 testFilepath = 'data/test.csv'
-trainData = pd.read_csv(trainFilepath, names=['id', 'title', 'abstract', 'introduction', 'label'])
-testData = pd.read_csv(testFilepath, names=['id', 'title', 'abstract', 'introduction', 'label'])
+trainData = pd.read_csv(trainFilepath)
+testData = pd.read_csv(testFilepath)
 testIntro = testData['introduction']
-
+print(testIntro)
 # Split into Train and Validate Datasets
 trainTitle, validTitle, trainAbs, validAbs, trainIntro, validIntro, trainLabel, validLabel = train_test_split(trainData['title'], trainData['abstract'], trainData['introduction'], trainData['label'])
 
@@ -136,13 +136,13 @@ def predict_test(classifier, feature_vector_train, label, feature_vector_test, i
     print(predictions)
 
     testDict = {
-        # "ID": testData['id'],
+        "ID": testData['ID'],
         "label": predictions
     }
     testDF = pd.DataFrame(testDict)
     testDF.index.name = "ID"
     print(testDF)
     # save ids and predctions in csv
-    testDF.to_csv('results.csv', index=True)
+    testDF.to_csv('results.csv', index=False)
 
 predict_test(LogisticRegression(), train_intro_tfidf, train_encodedLabels, test_intro_tfidf)
