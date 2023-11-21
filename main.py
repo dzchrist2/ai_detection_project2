@@ -92,25 +92,34 @@ def train_model(classifier, feature_vector_train, label, feature_vector_valid, i
 
 # Naive Bayes Classification:
 # NB Count Vector
+print("NB: Count:")
 accuracyTitle = train_model(MultinomialNB(), trainTitle_count, train_encodedLabels, validTitle_count)
 print("NB, Title Count Vectors: ", accuracyTitle)
 accuracyAbs = train_model(MultinomialNB(), train_abs_count, train_encodedLabels, valid_abs_count)
-print("NB, Abstract Count Vectors: ", accuracyAbs)
+print("NB, Abstract Count Vectors: ", accuracyAbs, "\n")
 
 # NB Word Level TFIDF
+print("NB: TFIDF:\n")
 accuracyIntro = train_model(MultinomialNB(), train_intro_tfidf, train_encodedLabels, valid_intro_tfidf)
 accuracyAbs = train_model(MultinomialNB(), train_abs_tfidf, train_encodedLabels, valid_abs_tfidf)
-accuracyTitle = train_model(MultinomialNB(), train_intro_tfidf, train_encodedLabels, valid_intro_tfidf)
+accuracyTitle = train_model(MultinomialNB(), train_title_tfidf, train_encodedLabels, valid_title_tfidf)
 print("NB, Intro WordLevel TF-IDF: ", accuracyIntro)
 print("NB, Abstract WordLevel TF-IDF: ", accuracyAbs)
-print("NB, Title WordLevel TF-IDF: ", accuracyTitle)
+print("NB, Title WordLevel TF-IDF: ", accuracyTitle, "\n")
 
 
 # Logistic Regression Linear Classification:
 # LR Count Vector
+print("LR: Count:")
 accuracy = train_model(LogisticRegression(), train_abs_count, train_encodedLabels, valid_abs_count)
-print("LR, Count Vectors: ", accuracy)
+print("LR, Abstract Count Vectors: ", accuracy, "\n")
 
 # LR Word Level TFIDF
-accuracy = train_model(LogisticRegression(), train_abs_tfidf, train_encodedLabels, valid_abs_tfidf)
-print("LR, TFIDF: ", accuracy)
+print("LR: Word TFIDF:")
+accuracyTitle = train_model(LogisticRegression(), train_title_tfidf, train_encodedLabels, valid_title_tfidf)
+print("LR, Title TFIDF: ", accuracyTitle)
+accuracyAbstract = train_model(LogisticRegression(), train_abs_tfidf, train_encodedLabels, valid_abs_tfidf)
+print("LR, Abstract TFIDF: ", accuracyAbstract)
+accuracyIntro = train_model(LogisticRegression(), train_intro_tfidf, train_encodedLabels, valid_intro_tfidf)
+print("LR, Intro TFIDF: ", accuracyIntro, "\n")
+
