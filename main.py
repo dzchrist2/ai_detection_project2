@@ -6,7 +6,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
+import sklearn.naive_bayes
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
 
 
 
@@ -18,49 +20,57 @@ testData = pd.read_csv(testFilepath, names=['id', 'title', 'abstract', 'introduc
 
 
 # Split into Train and Validate Datasets
-train, valid = train_test_split(trainData)
+trainTitle, validTitle, trainAbs, validAbs, trainIntro, validIntro, trainLabel, validLabel = train_test_split(trainData['title'], trainData['abstract'], trainData['introduction'], trainData['label'])
 
 # Label Encoder
 encoder = LabelEncoder()
-train_encodedLabels = encoder.fit_transform(train['label'])
-valid_encodedLabels = encoder.fit_transform(valid['label'])
+train_encodedLabels = encoder.fit_transform(trainLabel)
+valid_encodedLabels = encoder.fit_transform(validLabel)
 
 
 
 # Count Vectors:
 # Train: Create and Transform Count vectorizer object 
 trainCount_vect = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}')
-trainCount_vect.fit(train['abstract'])
+trainCount_vect.fit(trainTitle)
+trainCount_vect.fit(trainAbs)
 # print(trainCount_vect.vocabulary_)
 # print("\n\n")
-trainCount_vect.fit(train['title'])
+
 # print(trainCount_vect.vocabulary_)
-trainCount_vect.fit_transform(train['introduction'])
-valid_count = trainCount_vect.transform(valid)
+trainCount_vect.fit(trainIntro)
+trainTitle_count = trainCount_vect.transform(trainTitle)
+validTitle_count = trainCount_vect.transform(validTitle)
+train_abs_count = trainCount_vect.transform(trainAbs)
+valid_abs_count = trainCount_vect.transform(validAbs)
+
 
 
 # Test: Create and Transform Count vectorizer object 
 testCount_vect = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}')
-testCount_vect.fit(train['abstract'])
+testCount_vect.fit(trainAbs)
 # print(testCount_vect.vocabulary_)
 # print("\n\n")
-testCount_vect.fit(train['title'])
+testCount_vect.fit(trainTitle)
 # print(testCount_vect.vocabulary_)
-testCount_vect.fit_transform(train['introduction'])
+testCount_vect.fit_transform(trainIntro)
 
 
 
 # TF-IDF:
 # Word Level TF-IDFs
-title_tfidf = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}')
-abstract_tfidf = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}')
-intro_tfidf = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}')
-title_tfidf.fit_transform(train['title'])
-title_valid_tfidf = title_tfidf.transform(valid['title'])
-abstract_tfidf.fit_transform(train['abstract'])
-abstract_valid_tfidf = abstract_tfidf.transform(valid['abstract'])
-intro_tfidf.fit_transform(train['introduction'])
-intro_valid_tfidf = intro_tfidf.transform(valid['introduction'])
+title_tfidf_vec = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}')
+abstract_tfidf_vec = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}')
+intro_tfidf_vec = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}')
+title_tfidf_vec.fit(trainTitle)
+train_title_tfidf = title_tfidf_vec.transform(trainTitle)
+valid_title_tfidf = title_tfidf_vec.transform(validTitle)
+abstract_tfidf_vec.fit(trainAbs)
+train_abs_tfidf = abstract_tfidf_vec.transform(trainAbs)
+valid_abs_tfidf = abstract_tfidf_vec.transform(validAbs)
+intro_tfidf_vec.fit_transform(trainIntro)
+train_intro_tfidf = intro_tfidf_vec.transform(trainIntro)
+valid_intro_tfidf = intro_tfidf_vec.transform(validIntro)
 
 
 # TODO: add ngram level and character levels?
@@ -82,7 +92,25 @@ def train_model(classifier, feature_vector_train, label, feature_vector_valid, i
 
 # Naive Bayes Classification:
 # NB Count Vector
-accuracy = train_model(MultinomialNB(), trainCount_vect, train_encodedLabels, valid_count)
-print("NB, Count Vectors: ", accuracy)
+accuracyTitle = train_model(MultinomialNB(), trainTitle_count, train_encodedLabels, validTitle_count)
+print("NB, Title Count Vectors: ", accuracyTitle)
+accuracyAbs = train_model(MultinomialNB(), train_abs_count, train_encodedLabels, valid_abs_count)
+print("NB, Abstract Count Vectors: ", accuracyAbs)
+
+# NB Word Level TFIDF
+accuracyIntro = train_model(MultinomialNB(), train_intro_tfidf, train_encodedLabels, valid_intro_tfidf)
+accuracyAbs = train_model(MultinomialNB(), train_abs_tfidf, train_encodedLabels, valid_abs_tfidf)
+accuracyTitle = train_model(MultinomialNB(), train_intro_tfidf, train_encodedLabels, valid_intro_tfidf)
+print("NB, Intro WordLevel TF-IDF: ", accuracyIntro)
+print("NB, Abstract WordLevel TF-IDF: ", accuracyAbs)
+print("NB, Title WordLevel TF-IDF: ", accuracyTitle)
 
 
+# Logistic Regression Linear Classification:
+# LR Count Vector
+accuracy = train_model(LogisticRegression(), train_abs_count, train_encodedLabels, valid_abs_count)
+print("LR, Count Vectors: ", accuracy)
+
+# LR Word Level TFIDF
+accuracy = train_model(LogisticRegression(), train_abs_tfidf, train_encodedLabels, valid_abs_tfidf)
+print("LR, TFIDF: ", accuracy)
