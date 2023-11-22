@@ -10,6 +10,7 @@ import sklearn.naive_bayes
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import VotingClassifier
+from sklearn.svm import SVC
 
 
 # Data Preparation:
@@ -189,5 +190,6 @@ predict_test(LogisticRegression(), train_intro_tfidf, train_encodedLabels, test_
 
 
 # Ensemble Learning Testing:
-ensemble = VotingClassifier(estimators=[('NB', MultinomialNB()), ('LR', LogisticRegression())], voting='soft', weights=[0.7, 1])
+ensemble = VotingClassifier(estimators=[('NB', MultinomialNB()), ('LR', LogisticRegression())], voting='soft', weights=[1, 1])
 print("Ensemble: ", ensemble.fit(train_intro_tfidf, train_encodedLabels).score(valid_intro_tfidf, valid_encodedLabels))
+
