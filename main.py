@@ -75,6 +75,13 @@ train_intro_tfidf = intro_tfidf_vec.transform(trainIntro)
 valid_intro_tfidf = intro_tfidf_vec.transform(validIntro)
 test_intro_tfidf = intro_tfidf_vec.transform(testIntro)
 
+trainAll = trainTitle + trainAbs + trainIntro
+validAll = validTitle + validAbs + validIntro
+all_tfidf_vec = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}')
+all_tfidf_vec.fit(trainAll)
+train_all_tfidf = all_tfidf_vec.transform(trainAll)
+valid_all_tfidf = all_tfidf_vec.transform(validAll)
+
 # N_Gram Level TF-IDFs
 title_tfidf_vect_ngram = TfidfVectorizer(analyzer='word', token_pattern=r'\w{1,}', ngram_range=(2,3))
 title_tfidf_vect_ngram.fit(trainTitle)
@@ -95,7 +102,7 @@ valid_abs_tfidf_ngram = abs_tfidf_vect_ngram.transform(validAbs)
 test_abs_tfidf_ngram = abs_tfidf_vect_ngram.transform(testAbs)
 
 
-# TODO: add ngram level and character levels?
+# TODO: add character level ?
 
 
 # Function: Train Model
@@ -128,6 +135,8 @@ accuracyTitle = train_model(MultinomialNB(), train_title_tfidf, train_encodedLab
 print("NB, Intro WordLevel TF-IDF: ", accuracyIntro)
 print("NB, Abstract WordLevel TF-IDF: ", accuracyAbs)
 print("NB, Title WordLevel TF-IDF: ", accuracyTitle, "\n")
+accuracyAll = train_model(MultinomialNB(), train_all_tfidf, train_encodedLabels, valid_all_tfidf)
+print("NB, ALL TF-IDF: ", accuracyAll, "\n")
 
 # NB N-Gram TFIDF
 print("NB: N-Gram TFIDF")
@@ -137,6 +146,7 @@ accuracyIntro = train_model(MultinomialNB(), train_intro_tfidf_ngram, train_enco
 print("NB, Intro N-Gram TF-IDF: ", accuracyIntro)
 accuracyAbs = train_model(MultinomialNB(), train_abs_tfidf_ngram, train_encodedLabels, valid_abs_tfidf_ngram)
 print("NB, Abstract N-Gram TF-IDF: ", accuracyAbs, "\n")
+
 
 
 
@@ -153,7 +163,9 @@ print("LR, Title TFIDF: ", accuracyTitle)
 accuracyAbstract = train_model(LogisticRegression(), train_abs_tfidf, train_encodedLabels, valid_abs_tfidf)
 print("LR, Abstract TFIDF: ", accuracyAbstract)
 accuracyIntro = train_model(LogisticRegression(), train_intro_tfidf, train_encodedLabels, valid_intro_tfidf)
-print("LR, Intro TFIDF: ", accuracyIntro, "\n")
+print("LR, Intro TFIDF: ", accuracyIntro)
+accuracyAll = train_model(LogisticRegression(), train_all_tfidf, train_encodedLabels, valid_all_tfidf)
+print("LR, ALL TF-IDF: ", accuracyAll, "\n")
 
 # LR N-Gram TFIDF
 print("LR: N-Gram TFIDF")
@@ -163,6 +175,17 @@ accuracyIntro = train_model(LogisticRegression(), train_intro_tfidf_ngram, train
 print("LR, Intro N-Gram TF-IDF: ", accuracyIntro)
 accuracyAbs = train_model(LogisticRegression(), train_abs_tfidf_ngram, train_encodedLabels, valid_abs_tfidf_ngram)
 print("LR, Abstract N-Gram TF-IDF: ", accuracyAbs)
+
+# Support Vector Classification:
+# SVC Word Level TF-IDF
+accuracyIntro = train_model(SVC(), train_intro_tfidf, train_encodedLabels, valid_intro_tfidf)
+print("SVC, Intro TF-IDF: ", accuracyIntro)
+accuracyAbs = train_model(SVC(), train_abs_tfidf, train_encodedLabels, valid_abs_tfidf)
+print("SVC, Abstract TF-IDF: ", accuracyAbs)
+accuracyTitle = train_model(SVC(), train_title_tfidf, train_encodedLabels, valid_title_tfidf)
+print("SVC, Title TF-IDF: ", accuracyTitle)
+accuracyAll = train_model(SVC(), train_all_tfidf, train_encodedLabels, valid_all_tfidf)
+print("SVC, All TF-IDF: ", accuracyAll)
 
 
 
@@ -174,7 +197,7 @@ def predict_test(classifier, feature_vector_train, label, feature_vector_test, i
     # predict the labels on validation dataset
     predictions = classifier.predict(feature_vector_test)
     # print(predictions)
-    print(classifier.get_params)
+    # print(classifier.get_params)
 
     testDict = {
         "ID": testData['ID'],
@@ -186,10 +209,11 @@ def predict_test(classifier, feature_vector_train, label, feature_vector_test, i
     # save ids and predctions in csv
     testDF.to_csv('results.csv', index=False)
 
-predict_test(LogisticRegression(), train_intro_tfidf, train_encodedLabels, test_intro_tfidf)
+# predict_test(LogisticRegression(), train_intro_tfidf, train_encodedLabels, test_intro_tfidf)
 
 
 # Ensemble Learning Testing:
-ensemble = VotingClassifier(estimators=[('NB', MultinomialNB()), ('LR', LogisticRegression())], voting='soft', weights=[1, 1])
+ensemble = VotingClassifier(estimators=[('SVC', SVC(probability=True)), ('LR', LogisticRegression())], voting='soft', weights=[1, 0.9])
 print("Ensemble: ", ensemble.fit(train_intro_tfidf, train_encodedLabels).score(valid_intro_tfidf, valid_encodedLabels))
 
+predict_test(ensemble, train_intro_tfidf, train_encodedLabels, test_intro_tfidf)
