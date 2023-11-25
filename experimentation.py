@@ -115,9 +115,6 @@ train_all_tfidf_ngram = all_tfidf_vec_ngram.transform(trainAll)
 valid_all_tfidf_ngram = all_tfidf_vec_ngram.transform(validAll)
 
 
-# TODO: add character level ?
-
-
 # Function: Train Model
 def train_model(classifier, feature_vector_train, label, feature_vector_valid):
     # fit the training dataset on classifier
