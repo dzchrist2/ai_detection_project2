@@ -1,6 +1,4 @@
 import pandas as pd
-from keras.preprocessing import text, sequence
-from keras import layers, models, optimizers
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
